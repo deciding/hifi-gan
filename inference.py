@@ -41,6 +41,7 @@ def inference(a):
     generator.load_state_dict(state_dict_g['generator'])
 
     filelist = os.listdir(a.input_wavs_dir)
+    #filelist = glob.glob(a.input_wavs_dir)
 
     os.makedirs(a.output_dir, exist_ok=True)
 
@@ -49,6 +50,7 @@ def inference(a):
     with torch.no_grad():
         for i, filname in enumerate(filelist):
             wav, sr = load_wav(os.path.join(a.input_wavs_dir, filname))
+            #wav, sr = load_wav(filname)
             wav = wav / MAX_WAV_VALUE
             wav = torch.FloatTensor(wav).to(device)
             x = get_mel(wav.unsqueeze(0))
@@ -58,6 +60,7 @@ def inference(a):
             audio = audio.cpu().numpy().astype('int16')
 
             output_file = os.path.join(a.output_dir, os.path.splitext(filname)[0] + '_generated.wav')
+            #output_file = os.path.join(a.output_dir, os.path.splitext(os.path.basename(filname))[0] + '_generated.wav')
             write(output_file, h.sampling_rate, audio)
             print(output_file)
 
@@ -66,9 +69,9 @@ def main():
     print('Initializing Inference Process..')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_wavs_dir', default='test_files')
-    parser.add_argument('--output_dir', default='generated_files')
-    parser.add_argument('--checkpoint_file', required=True)
+    parser.add_argument('-i', '--input_wavs_dir', default='test_files')
+    parser.add_argument('-o', '--output_dir', default='generated_files')
+    parser.add_argument('-p', '--checkpoint_file', required=True)
     a = parser.parse_args()
 
     config_file = os.path.join(os.path.split(a.checkpoint_file)[0], 'config.json')
